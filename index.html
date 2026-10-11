@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TA会爱上怎样的人？｜OC LOVE PROFILE</title>
+<style>
+* { box-sizing: border-box; }
+body {
+    margin:0; min-height:100vh;
+    font-family:"Noto Sans SC","Microsoft YaHei",sans-serif;
+    color:#38425c; overflow-x:hidden;
+    background:linear-gradient(160deg,#dcecff 0%,#f5d9e8 45%,#aebde8 100%);
+}
+.stars {
+    position:fixed; inset:0; pointer-events:none;
+    background-image:radial-gradient(circle,rgba(255,255,255,.8) 1px,transparent 2px);
+    background-size:80px 80px; opacity:.35;
+    animation:starMove 25s linear infinite;
+    z-index:0;
+}
+@keyframes starMove { from{transform:translateY(0);} to{transform:translateY(-80px);} }
+.page {
+    display:none; min-height:100vh;
+    padding:60px 22px 80px;
+    position:relative; z-index:1;
+    animation:fadeIn .6s ease;
+}
+.page.active { display:flex; flex-direction:column; align-items:center; justify-content:center; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+h1,h2 { font-family:"Times New Roman","Songti SC",serif; font-weight:500; letter-spacing:2px; }
+h1 { font-size:clamp(34px,8vw,52px); text-align:center; color:#303954; }
+h2 { font-size:22px; color:#34405e; margin:0 0 12px; }
+.archive-number { font-size:12px; letter-spacing:4px; color:#7181a8; margin-bottom:30px; }
+.subtitle { font-size:15px; letter-spacing:2px; color:#687593; text-align:center; margin-bottom:50px; }
+.card {
+    width:100%; max-width:500px; padding:35px 26px; border-radius:24px;
+    background:rgba(255,255,255,.5); backdrop-filter:blur(18px);
+    border:1px solid rgba(255,255,255,.8);
+    box-shadow:0 20px 50px rgba(82,100,150,.15);
+}
+label { display:block; margin-top:20px; margin-bottom:8px; font-size:14px; letter-spacing:1px; color:#4d5875; }
+input {
+    width:100%; padding:15px; border-radius:14px;
+    border:1px solid rgba(120,140,190,.3);
+    background:rgba(255,255,255,.7); outline:none; font-size:15px; color:#38425c;
+}
+input:focus { border-color:#91b8e8; box-shadow:0 0 0 3px rgba(145,184,232,.2); }
+.main-btn {
+    margin-top:28px; width:100%; padding:16px; border-radius:30px; border:none;
+    cursor:pointer; font-size:16px; letter-spacing:3px; color:white;
+    background:linear-gradient(120deg,#91b8e8,#dba6c8);
+    box-shadow:0 10px 25px rgba(120,130,180,.3); transition:.3s;
+    font-family:inherit;
+}
+.main-btn:hover { transform:translateY(-3px); box-shadow:0 14px 30px rgba(120,130,180,.4); }
+.back-btn {
+    margin-top:14px; width:100%; padding:12px;
+    border-radius:26px;
+    border:1px solid rgba(120,140,190,.35);
+    background:rgba(255,255,255,.5);
+    color:#5a6a8c; cursor:pointer; font-size:14px; letter-spacing:2px;
+    transition:.3s; font-family:inherit;
+}
+.back-btn:hover { background:rgba(255,255,255,.9); color:#3a4a6c; }
+.gender-box { display:flex; gap:12px; margin-top:15px; }
+.gender-btn {
+    flex:1; padding:13px 5px; border-radius:18px;
+    border:1px solid rgba(120,140,190,.3);
+    background:rgba(255,255,255,.5); color:#53607d; cursor:pointer;
+    font-family:inherit; font-size:14px;
+}
+.gender-btn.selected {
+    background:linear-gradient(120deg,rgba(145,184,232,.6),rgba(219,166,200,.6));
+    border-color:#829bd0; color:#2f3a58; font-weight:600;
+}
+.progress { margin-bottom:25px; font-size:13px; letter-spacing:2px; color:#7382a5; }
+.question-card {
+    width:100%; max-width:500px; padding:24px 22px; margin-bottom:18px;
+    background:rgba(255,255,255,.55); border-radius:20px;
+    border:1px solid rgba(255,255,255,.8);
+    box-shadow:0 8px 24px rgba(82,100,150,.08);
+}
+.question-title { line-height:1.75; font-size:15px; color:#3a4a6c; }
+.moon-options { display:flex; justify-content:space-between; margin-top:18px; gap:4px; }
+.moon-item {
+    flex:1; display:flex; flex-direction:column; align-items:center;
+    cursor:pointer; padding:8px 2px; border-radius:14px;
+    transition:.25s; user-select:none;
+}
+.moon-item:hover { background:rgba(255,255,255,.65); }
+.moon { font-size:26px; opacity:.4; transition:.3s; line-height:1; }
+.moon-label { font-size:9px; margin-top:5px; color:#8894b4; letter-spacing:.5px; white-space:nowrap; }
+.moon-item.selected { background:linear-gradient(140deg,rgba(145,184,232,.35),rgba(219,166,200,.35)); }
+.moon-item.selected .moon { opacity:1; transform:scale(1.18); filter:drop-shadow(0 0 10px rgba(255,255,255,1)); }
+.moon-item.selected .moon-label { color:#4a5a8c; font-weight:600; }
+.loading-box { text-align:center; }
+#loading-text { margin-top:30px; color:#65749b; font-size:15px; letter-spacing:1px; }
+#result-container { width:100%; max-width:500px; }
+.result-section {
+    position:relative;
+    margin-bottom:22px; padding:26px 22px;
+    border-radius:22px;
+    background:rgba(255,255,255,.6);
+    backdrop-filter:blur(15px);
+    border:1px solid rgba(255,255,255,.85);
+    box-shadow:0 12px 32px rgba(82,100,150,.12);
+    overflow:hidden;
+}
+.result-section::before {
+    content:"";
+    position:absolute; top:0; left:22px; right:22px; height:3px;
+    border-radius:0 0 4px 4px;
+    background:linear-gradient(90deg,#91b8e8,#dba6c8);
+    opacity:.85;
+}
+.result-hero {
+    text-align:center;
+    padding:36px 22px 30px !important;
+    background:linear-gradient(150deg,rgba(255,255,255,.7),rgba(230,240,255,.55));
+}
+.result-hero::before { left:30%; right:30%; background:linear-gradient(90deg,#91b8e8,#dba6c8,#91b8e8); }
+.result-number {
+    display:inline-block; padding:5px 14px; border-radius:14px;
+    background:rgba(145,184,232,.25);
+    font-size:11px; letter-spacing:3px; color:#5a6a9a;
+}
+.result-owner { margin-top:14px; font-size:12px; letter-spacing:4px; color:#8494b8; }
+.result-title {
+    font-family:"Times New Roman","Songti SC",serif;
+    font-size:clamp(42px,12vw,58px);
+    font-weight:600; line-height:1.1;
+    margin:6px 0 16px; letter-spacing:6px;
+    background:linear-gradient(120deg,#4a6cd4 0%,#8b6ac9 50%,#c96a9f 100%);
+    -webkit-background-clip:text; background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+.result-sub { font-size:13px; color:#687698; letter-spacing:1px; }
+.result-sub strong { color:#4a5a8c; font-weight:600; letter-spacing:1px; }
+.tag {
+    display:inline-block; padding:7px 15px; margin:10px 4px 0; border-radius:20px;
+    background:linear-gradient(120deg,rgba(145,184,232,.35),rgba(219,166,200,.35));
+    border:1px solid rgba(255,255,255,.8);
+    font-size:12px; letter-spacing:1px; color:#4a5a8c;
+}
+.result-section h2 {
+    font-size:18px; letter-spacing:3px; color:#3a4a6c;
+    padding-left:12px; position:relative;
+}
+.result-section h2::before {
+    content:""; position:absolute; left:0; top:4px; bottom:4px; width:3px;
+    border-radius:2px;
+    background:linear-gradient(180deg,#91b8e8,#dba6c8);
+}
+.result-section p { line-height:1.85; font-size:14.5px; color:#4d5875; margin:10px 0; }
+.radar-wrap { display:flex; justify-content:center; padding:6px 0 10px; }
+.radar-wrap canvas {
+    width:100%; max-width:300px;
+    height:auto; aspect-ratio:1/1;
+    display:block;
+}
+.dim-row { margin-top:12px; }
+.dim-head {
+    display:flex; justify-content:space-between;
+    font-size:13px; color:#4d5875; margin-bottom:5px;
+    letter-spacing:1px;
+}
+.dim-val { color:#7a5a9a; font-weight:600; }
+.dim-bar { height:8px; border-radius:5px; background:rgba(180,200,240,.3); overflow:hidden; }
+.dim-bar-fill {
+    height:100%; border-radius:5px;
+    background:linear-gradient(90deg,#91b8e8,#dba6c8);
+    box-shadow:0 0 8px rgba(180,150,210,.5);
+    transition:width 1s ease;
+}
+.dim-bar-fill.alt { background:linear-gradient(90deg,#a6c8f0,#e8b8d4); }
+.watermark {
+    position:absolute; bottom:25px; left:50%; transform:translateX(-50%);
+    font-size:12px; letter-spacing:2px;
+    color:rgba(70,90,130,.5);
+}
+@media(max-width:600px){
+    h1 { font-size:36px; }
+    .card { padding:28px 20px; }
+    .question-card { padding:20px 18px; }
+    .moon { font-size:24px; }
+    .moon-label { font-size:8px; }
+    .result-title { letter-spacing:4px; }
+}
+</style>
+</head>
+<body>
+<div class="stars"></div>
+
+<section id="cover-page" class="page active">
+    <div class="archive-number">ARCHIVE NO.000</div>
+    <h1>TA会爱上怎样的人？</h1>
+    <p class="subtitle">一份关于角色灵魂契合的测试档案</p >
+    <button class="main-btn" onclick="openProfile()">开启档案</button>
+    <div class="watermark">一粒沙尘制作</div>
+</section>
+
+<section id="profile-page" class="page">
+    <div class="card">
+        <h2>角色档案录入</h2>
+        <label>角色姓名</label>
+        <input id="character-name" placeholder="请输入角色名字" maxlength="20">
+        <label>角色性别</label>
+        <div class="gender-box">
+            <button class="gender-btn" onclick="selectCharacterGender(this,'男')">男</button>
+            <button class="gender-btn" onclick="selectCharacterGender(this,'女')">女</button>
+            <button class="gender-btn" onclick="selectCharacterGender(this,'其他')">其他</button>
+        </div>
+        <button class="main-btn" onclick="goLoveGender()">下一步</button>
+        <button class="back-btn" onclick="showPage('cover-page')">← 返回封面</button>
+    </div>
+</section>
+<section id="love-gender-page" class="page">
+    <div class="card">
+        <h2>TA未来恋人的性别倾向</h2>
+        <p style="color:#687698; font-size:14px; line-height:1.8;">这个选择会影响最终恋人画像。</p >
+        <div class="gender-box">
+            <button class="gender-btn" onclick="selectLoveGender(this,'男')">男</button>
+            <button class="gender-btn" onclick="selectLoveGender(this,'女')">女</button>
+            <button class="gender-btn" onclick="selectLoveGender(this,'不限')">不限</button>
+        </div>
+        <button class="main-btn" onclick="startExplain()">继续</button>
+        <button class="back-btn" onclick="showPage('profile-page')">← 返回上一步</button>
+    </div>
+</section>
+
+<section id="intro-page" class="page">
+    <div class="card">
+        <h2>开始读取档案</h2>
+        <p style="color:#687698; font-size:14px; line-height:1.9;">
+            请以角色真实想法作答。<br><br>
+            让我们寻找：<br>TA真正会被怎样的人吸引。
+        </p >
+        <button class="main-btn" onclick="startTest()">开始分析</button>
+        <button class="back-btn" onclick="showPage('love-gender-page')">← 返回上一步</button>
+    </div>
+</section>
+<section id="test-page" class="page">
+    <div class="progress"><span id="question-progress">01-03 / 30</span></div>
+    <div id="question-container"></div>
+    <button id="next-question" class="main-btn" onclick="nextQuestion()">下一页</button>
+    <button class="back-btn" onclick="goBackTest()">← 返回上一页</button>
+</section>
+
+<section id="loading-page" class="page">
+    <div class="loading-box">
+        <h2>正在解析TA的情感档案……</h2>
+        <p id="loading-text">读取依恋倾向</p >
+    </div>
+</section>
+
+<section id="result-page" class="page">
+    <div id="result-container"></div>
+    <button class="main-btn" onclick="createShareCard()">生成专属档案卡</button>
+    <div class="watermark">一粒沙尘制作</div>
+</section>
+
+<canvas id="share-canvas" width="1080" height="1920" style="display:none;"></canvas>
+<script>
+const questions = [
+{ text:"TA希望恋人在生活中始终保持稳定的存在感，即使不说话，也能感受到对方在身边。", dimension:"stable", weight:1 },
+{ text:"当面对困难时，TA更希望有一个人陪伴自己，而不是独自承担。", dimension:"stable", weight:1 },
+{ text:"TA认为长久的关系，比短暂强烈的心动更加重要。", dimension:"stable", weight:2 },
+{ text:"TA容易被可靠、守信、能够给予安全感的人吸引。", dimension:"stable", weight:1 },
+{ text:"如果恋人忽冷忽热，TA会明显感到不安。", dimension:"stable", weight:2 },
+{ text:"TA希望恋人能够理解自己的想法，即使不用解释太多。", dimension:"soul", weight:1 },
+{ text:"比起外貌和条件，TA更在意两个人是否拥有精神上的默契。", dimension:"soul", weight:2 },
+{ text:"TA喜欢和恋人分享自己的秘密、兴趣和内心世界。", dimension:"soul", weight:1 },
+{ text:"TA希望遇到一个真正懂自己的人，而不是只喜欢表面的自己。", dimension:"soul", weight:2 },
+{ text:"TA相信人与人之间存在某种特殊的灵魂连接。", dimension:"soul", weight:1 },
+{ text:"即使恋爱后，TA也希望保留属于自己的时间和空间。", dimension:"space", weight:1 },
+{ text:"TA不喜欢恋人过度干涉自己的决定。", dimension:"space", weight:1 },
+{ text:"TA认为好的关系应该是两个人并肩前进，而不是互相依赖。", dimension:"space", weight:2 },
+{ text:"TA会欣赏拥有自己生活和目标的恋人。", dimension:"space", weight:1 },
+{ text:"过于紧密的关系反而可能让TA感到压力。", dimension:"space", weight:2 },
+{ text:"TA喜欢恋人直接表达爱意，而不是隐藏自己的感情。", dimension:"emotion", weight:1 },
+{ text:"浪漫的小事会让TA感受到被重视。", dimension:"emotion", weight:1 },
+{ text:"TA希望恋人能够主动表达想念和喜欢。", dimension:"emotion", weight:2 },
+{ text:"TA容易被热烈、真诚的感情打动。", dimension:"emotion", weight:1 },
+{ text:"对于TA来说，被坚定选择是一件非常重要的事情。", dimension:"emotion", weight:2 },
+{ text:"TA希望自己在恋人心中拥有特别的位置。", dimension:"bond", weight:1 },
+{ text:"TA会在意自己是不是对方不可替代的人。", dimension:"bond", weight:2 },
+{ text:"TA希望恋爱不仅是陪伴，更是一种深层连接。", dimension:"bond", weight:1 },
+{ text:"TA容易珍惜那些只属于两个人之间的回忆。", dimension:"bond", weight:1 },
+{ text:"如果遇到真正重要的人，TA会投入非常深的感情。", dimension:"bond", weight:2 },
+{ text:"TA害怕失去重要的人。", dimension:"attach", weight:2 },
+{ text:"一旦认定一个人，TA通常很难轻易放下。", dimension:"attach", weight:2 },
+{ text:"TA希望恋人能够坚定地选择自己。", dimension:"attach", weight:1 },
+{ text:"TA会因为重要关系产生强烈情绪波动。", dimension:"attach", weight:1 },
+{ text:"TA相信真正的爱应该足够深刻，甚至改变彼此。", dimension:"attach", weight:2 }
+];
+</script>
+<script>
+const results = {
+guardian:{ number:"NO.01", title:"守护者", tags:["陪伴","坚定"],
+summary:"TA寻找的不是短暂的心动，而是一个愿意一直留下的人。",
+portrait:"TA理想中的恋人，是一个能够给予安全感的人。不需要时时刻刻制造惊喜，却会在重要时刻坚定站在身边。这样的关系并不依靠轰轰烈烈维持，而是在漫长的日常里积累信任。TA需要的是一个可以让自己放下防备，安心展现真实模样的人。",
+loveStyle:"你们的相处更像一场安静而漫长的陪伴。可能不会每天都有戏剧性的浪漫，但会记得彼此的小习惯，会在疲惫的时候给予拥抱。",
+conflict:"当对方表现出疏离或无法及时回应时，TA可能会产生不安，需要避免把沉默理解成不爱。",
+advice:"学会直接表达需求，比等待对方猜测更容易维持稳定关系。",
+radar:{ 占有欲:65, 依恋程度:80, 主动程度:55, 防御心理:60, 付出倾向:90, 信任程度:85 }},
+
+soulmate:{ number:"NO.02", title:"灵魂共鸣", tags:["理解","默契"],
+summary:"TA渴望的不是被注视，而是被真正理解。",
+portrait:"TA希望恋人能够进入自己的精神世界。比起表面的热闹，TA更在意两个人是否拥有相似的频率。理想的关系，是无需过多解释，一个眼神、一个想法，就能够产生回应。",
+loveStyle:"你们会拥有大量深入交流的时刻。分享秘密、讨论想法、一起探索未知，会成为关系里的重要部分。",
+conflict:"TA有时容易期待对方完全理解自己，却忽略每个人表达爱的方式不同。",
+advice:"保持沟通，不要只期待默契，也要主动让对方了解自己的内心。",
+radar:{ 占有欲:50, 依恋程度:75, 主动程度:60, 防御心理:70, 付出倾向:80, 信任程度:90 }},
+
+partner:{ number:"NO.03", title:"并肩伴侣", tags:["平等","成长"],
+summary:"TA想要的是同行者，而不是束缚彼此的人。",
+portrait:"TA理想中的恋爱，是两个完整的人相互靠近。彼此拥有自己的目标，也愿意分享人生旅程。TA欣赏能够尊重自己空间，同时愿意一起成长的人。",
+loveStyle:"你们像伙伴一样生活。一起计划未来，一起完成目标，也会给予彼此自由。",
+conflict:"过于强调独立，可能让对方误以为自己不被需要。",
+advice:"保持距离感的同时，也要让对方感受到自己的重要性。",
+radar:{ 占有欲:35, 依恋程度:55, 主动程度:70, 防御心理:55, 付出倾向:75, 信任程度:85 }},
+healer:{ number:"NO.04", title:"温柔治愈", tags:["包容","温暖"],
+summary:"TA需要一个能够接住疲惫，也理解脆弱的人。",
+portrait:"TA经历过许多无法轻易说出口的情绪，因此会被温柔而稳定的人吸引。理想恋人不是改变TA的人，而是在TA需要的时候给予安静陪伴的人。",
+loveStyle:"你们的关系充满照顾感。一个提供安慰，一个分享信任，慢慢建立安全感。",
+conflict:"TA可能习惯隐藏自己的问题，不愿让恋人担心。",
+advice:"允许自己被照顾，也是亲密关系的一部分。",
+radar:{ 占有欲:55, 依恋程度:70, 主动程度:45, 防御心理:75, 付出倾向:95, 信任程度:80 }},
+
+passion:{ number:"NO.05", title:"炽烈", tags:["热爱","心动"],
+summary:"TA想要的爱，是明确、直接、无法忽视的存在。",
+portrait:"TA相信真正重要的感情应该拥有温度。TA容易被坦率表达、坚定选择自己的人吸引。比起平淡，TA更期待一种能够点燃彼此的关系。",
+loveStyle:"你们的感情浓度很高，会有大量表达爱意的时刻，也容易创造属于两个人的特殊记忆。",
+conflict:"情绪浓度较高时，可能因为在意而产生过度敏感。",
+advice:"让热烈和稳定同时存在，才能让感情走得更远。",
+radar:{ 占有欲:80, 依恋程度:85, 主动程度:90, 防御心理:45, 付出倾向:85, 信任程度:70 }},
+
+collector:{ number:"NO.06", title:"唯一收藏", tags:["偏爱","珍视"],
+summary:"TA想成为某个人心里，永远无法替代的存在。",
+portrait:"TA对感情有着很高的投入程度。一旦确认关系，TA会认真守护这段连接。TA希望恋人给予的不只是喜欢，而是一种明确的选择——你是特别的，你无法被替代。",
+loveStyle:"你们会非常重视属于彼此的小习惯、小秘密和共同记忆。关系里的仪式感，会成为安全感来源。",
+conflict:"过强的不安感可能让TA过度确认对方是否仍然在乎自己。",
+advice:"真正的唯一，不需要通过束缚证明，而是建立在彼此信任之上。",
+radar:{ 占有欲:95, 依恋程度:95, 主动程度:65, 防御心理:70, 付出倾向:90, 信任程度:75 }},
+guide:{ number:"NO.07", title:"引路人", tags:["启发","成长"],
+summary:"TA希望遇见一个能带自己看见更远世界的人。",
+portrait:"TA容易被拥有独特思想和坚定方向的人吸引。理想恋人不仅是陪伴者，也是能够给予启发的人。两个人会在关系里互相影响，共同成为更好的自己。",
+loveStyle:"你们会一起探索新的事物，分享彼此的想法，也会鼓励对方追逐梦想。",
+conflict:"TA有时可能过度期待对方成为自己的精神支柱。",
+advice:"好的恋人是同行者，而不是人生答案。",
+radar:{ 占有欲:35, 依恋程度:60, 主动程度:75, 防御心理:55, 付出倾向:80, 信任程度:85 }},
+
+freedom:{ number:"NO.08", title:"自由共生", tags:["自由","尊重"],
+summary:"TA想靠近一个人，但不想失去自己。",
+portrait:"TA需要的是一种成熟的关系。两个人可以拥有不同的世界，却依然愿意分享彼此的人生。TA欣赏尊重边界、理解独立的重要性的人。",
+loveStyle:"你们不会过度束缚彼此，而是在需要的时候靠近，在各自成长时给予支持。",
+conflict:"过度理性可能让感情显得不够热烈。",
+advice:"自由不是距离，而是相信对方不会离开。",
+radar:{ 占有欲:30, 依恋程度:45, 主动程度:70, 防御心理:65, 付出倾向:75, 信任程度:95 }},
+
+rational:{ number:"NO.09", title:"理性同行", tags:["成熟","可靠"],
+summary:"TA寻找的是能够一起面对未来的人。",
+portrait:"TA重视长期关系中的稳定与现实适配。比起短暂激情，TA更关注两个人是否能够共同生活、解决问题，并在时间中保持理解。",
+loveStyle:"你们会像队友一样处理生活，一起规划未来，也一起承担责任。",
+conflict:"有时过于关注现实，会忽略情感表达的重要性。",
+advice:"除了共同前进，也要记得偶尔停下来表达爱。",
+radar:{ 占有欲:45, 依恋程度:60, 主动程度:60, 防御心理:70, 付出倾向:85, 信任程度:90 }},
+poet:{ number:"NO.10", title:"玫瑰诗人", tags:["浪漫","心意"],
+summary:"TA相信爱应该被表达，也应该被记住。",
+portrait:"TA容易被细节打动。一个特别的礼物、一句记得很久的话、一次精心准备的相遇，都可能成为TA珍藏的瞬间。",
+loveStyle:"你们会创造很多浪漫回忆，喜欢赋予普通日子特殊意义。",
+conflict:"如果现实回应不符合期待，TA可能产生落差感。",
+advice:"浪漫来自表达，也来自理解彼此真实的需求。",
+radar:{ 占有欲:60, 依恋程度:70, 主动程度:80, 防御心理:45, 付出倾向:85, 信任程度:75 }},
+
+listener:{ number:"NO.11", title:"倾听者", tags:["理解","接纳"],
+summary:"TA需要一个愿意听见沉默的人。",
+portrait:"TA并不容易完全打开自己。理想恋人需要拥有耐心，能够接受TA复杂的情绪和未说出口的话。",
+loveStyle:"你们的关系会有大量安静陪伴。不一定每天热烈表达，但彼此都知道对方在那里。",
+conflict:"TA可能习惯隐藏真实需求，让对方难以判断自己的想法。",
+advice:"被理解之前，也需要允许自己表达。",
+radar:{ 占有欲:55, 依恋程度:75, 主动程度:40, 防御心理:90, 付出倾向:85, 信任程度:80 }},
+
+fate:{ number:"NO.12", title:"命定共犯", tags:["宿命","共赴"],
+summary:"TA相信有些相遇，从开始就注定特别。",
+portrait:"TA追求的是一种极深的情感连接。对于TA而言，恋人不仅是陪伴者，更是一起经历人生、改变彼此命运的人。",
+loveStyle:"你们之间会拥有强烈的羁绊感，像共同守护一个只有彼此知道的秘密。",
+conflict:"过深的投入可能让TA难以保持客观。",
+advice:"深爱一个人，也要记得保留完整的自己。",
+radar:{ 占有欲:90, 依恋程度:95, 主动程度:75, 防御心理:60, 付出倾向:95, 信任程度:80 }}
+};
+</script>
+<script>
+function renderResult(result, data){
+    let main = results[result.main];
+    let sub  = results[result.sub] || main;
+    let container = document.getElementById("result-container");
+    let tags = [...main.tags, getDynamicTag(data)];
+    let ownerName = (character && character.name) ? character.name : "TA";
+
+    container.innerHTML = `
+    <div class="result-section result-hero">
+        <div class="result-number">${main.number}</div>
+        <div class="result-owner">${ownerName} · 恋爱档案</div>
+        <div class="result-title" id="result-main-title">${main.title}</div>
+        <div class="result-sub">副倾向：<strong id="result-sub-title">${sub.title}</strong></div>
+        <div>${tags.map(t => `<span class="tag">${t}</span>`).join("")}</div>
+    </div>
+
+    <div class="result-section"><h2>TA会爱上怎样的人？</h2><p>${main.summary}</p ></div>
+    <div class="result-section"><h2>理想恋人画像</h2><p>${main.portrait}</p ></div>
+
+    <div class="result-section">
+        <h2>六维恋爱适配</h2>
+        <div class="radar-wrap"><canvas id="radarChart"></canvas></div>
+        <div class="data-box">${renderDimensionData(data.percent)}</div>
+    </div>
+
+    <div class="result-section">
+        <h2>TA自身的恋爱人格</h2>
+        <div class="radar-wrap"><canvas id="personalityRadar"></canvas></div>
+        <div class="data-box">${renderPersonality(main.radar)}</div>
+    </div>
+
+    <div class="result-section"><h2>相处模式</h2><p>${main.loveStyle}</p ></div>
+    <div class="result-section"><h2>容易产生的矛盾</h2><p>${main.conflict}</p ></div>
+    <div class="result-section"><h2>关系调节建议</h2><p>${main.advice}</p ></div>
+    <div class="result-section" style="text-align:center;">
+        <p style="letter-spacing:4px; font-size:12px; color:#8494b8;">OC LOVE PROFILE</p >
+        <p style="letter-spacing:2px; font-size:12px; color:#8494b8;">一粒沙尘制作</p >
+    </div>
+    `;
+
+    requestAnimationFrame(()=>{
+        requestAnimationFrame(()=>{
+            drawRadar("radarChart", data.radar, ["陪伴","共鸣","空间","表达","绑定","依恋"]);
+            drawRadar("personalityRadar", Object.values(main.radar), ["占有欲","依恋","主动","防御","付出","信任"]);
+        });
+    });
+}
+function getDynamicTag(data){
+    let p = data.percent;
+    let max = Object.keys(p).sort((a,b)=>p[b]-p[a])[0];
+    let tags = {
+        stable:["长情","安心","守候"], soul:["共振","默契","深度"],
+        space:["自由","边界","尊重"], emotion:["浪漫","心动","热烈"],
+        bond:["偏爱","唯一","珍藏"], attach:["深情","执着","羁绊"]
+    };
+    let arr = tags[max];
+    return arr[p[max] % arr.length];
+}
+
+function renderDimensionData(data){
+    let names = {stable:"稳定陪伴",soul:"灵魂共鸣",space:"独立空间",emotion:"情感表达",bond:"关系绑定",attach:"深层依恋"};
+    let order = ["stable","soul","space","emotion","bond","attach"];
+    return order.map(key => `
+        <div class="dim-row">
+            <div class="dim-head">
+                <span>${names[key]}</span>
+                <span class="dim-val">${data[key]}%</span>
+            </div>
+            <div class="dim-bar">
+                <div class="dim-bar-fill" style="width:${data[key]}%"></div>
+            </div>
+        </div>
+    `).join("");
+}
+
+function renderPersonality(data){
+    return Object.keys(data).map(k => `
+        <div class="dim-row">
+            <div class="dim-head">
+                <span>${k}</span>
+                <span class="dim-val">${data[k]}%</span>
+            </div>
+            <div class="dim-bar">
+                <div class="dim-bar-fill alt" style="width:${data[k]}%"></div>
+            </div>
+        </div>
+    `).join("");
+}
+</script>
+<script>
+const dimensions = {
+    stable:{ name:"稳定陪伴", max:35 },
+    soul:{   name:"灵魂共鸣", max:35 },
+    space:{  name:"独立空间", max:35 },
+    emotion:{name:"情感表达", max:35 },
+    bond:{   name:"关系绑定", max:35 },
+    attach:{ name:"深层依恋", max:35 }
+};
+
+function calculateResult(answers){
+    let scores = {stable:0,soul:0,space:0,emotion:0,bond:0,attach:0};
+    questions.forEach((q,index)=>{
+        let answer = answers[index] === undefined ? 3 : answers[index];
+        scores[q.dimension] += answer * q.weight;
+    });
+    let percentage = {};
+    Object.keys(scores).forEach(key=>{
+        percentage[key] = Math.round(scores[key] / dimensions[key].max * 100);
+        if(percentage[key] > 100) percentage[key] = 100;
+        if(percentage[key] < 0)   percentage[key] = 0;
+    });
+    return {
+        raw:scores, percent:percentage,
+        radar:[percentage.stable,percentage.soul,percentage.space,percentage.emotion,percentage.bond,percentage.attach]
+    };
+}
+
+const typeWeights = {
+    guardian:{ name:"守护者",   stable:0.6, bond:0.2, attach:0.2 },
+    soulmate:{ name:"灵魂共鸣", soul:0.6,   bond:0.2, space:0.2 },
+    partner:{  name:"并肩伴侣", space:0.5,  stable:0.3, soul:0.2 },
+    healer:{   name:"温柔治愈", stable:0.5, emotion:0.3, attach:0.2 },
+    passion:{  name:"炽烈",     emotion:0.5,attach:0.3, bond:0.2 },
+    collector:{name:"唯一收藏", bond:0.5,   attach:0.5 },
+    guide:{    name:"引路人",   soul:0.4,   space:0.3, stable:0.3 },
+    freedom:{  name:"自由共生", space:0.6,  soul:0.3, stable:0.1 },
+    rational:{ name:"理性同行", stable:0.5, space:0.3, bond:0.2 },
+    poet:{     name:"玫瑰诗人", emotion:0.6,soul:0.2, bond:0.2 },
+    listener:{ name:"倾听者",   soul:0.4,   stable:0.4, attach:0.2 },
+    fate:{     name:"命定共犯", bond:0.4,   attach:0.4, emotion:0.2 }
+};
+
+function getResultType(data){
+    let scores = [];
+    Object.keys(typeWeights).forEach(type=>{
+        let weight = typeWeights[type];
+        let total = 0, sum = 0;
+        Object.keys(weight).forEach(key=>{
+            if(key !== "name"){
+                total += data.percent[key] * weight[key];
+                sum   += weight[key];
+            }
+        });
+        if(sum > 0) total = total / sum;
+        scores.push({ type:type, score:total });
+    });
+    scores.sort((a,b)=> b.score - a.score);
+    return { main: scores[0].type, sub: scores[1].type, ranking: scores, data: data };
+}
+</script>
+<script>
+function drawRadar(canvasId, values, labels){
+    let canvas = document.getElementById(canvasId);
+    if(!canvas) return;
+    let rect = canvas.getBoundingClientRect();
+    let cssW = rect.width  || 280;
+    let cssH = rect.height || cssW;
+    if(cssW < 10) cssW = 280;
+    if(cssH < 10) cssH = cssW;
+    let dpr = window.devicePixelRatio || 1;
+    canvas.width  = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+    let ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,cssW,cssH);
+    let width = cssW, height = cssH;
+    let centerX = width/2, centerY = height/2;
+    let radius = Math.min(width,height) * 0.32;
+    let count = values.length;
+    let angleStep = Math.PI*2/count;
+
+    ctx.strokeStyle = "rgba(100,120,160,.22)";
+    ctx.lineWidth = 1;
+    for(let level=1; level<=5; level++){
+        ctx.beginPath();
+        for(let i=0; i<count; i++){
+            let angle = i*angleStep - Math.PI/2;
+            let r = radius*level/5;
+            let x = centerX + Math.cos(angle)*r;
+            let y = centerY + Math.sin(angle)*r;
+            if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+        }
+        ctx.closePath(); ctx.stroke();
+    }
+    for(let i=0; i<count; i++){
+        let angle = i*angleStep - Math.PI/2;
+        ctx.beginPath();
+        ctx.moveTo(centerX, centerY);
+        ctx.lineTo(centerX + Math.cos(angle)*radius, centerY + Math.sin(angle)*radius);
+        ctx.stroke();
+    }
+    ctx.beginPath();
+    values.forEach((value,index)=>{
+        let angle = index*angleStep - Math.PI/2;
+        let r = radius*value/100;
+        let x = centerX + Math.cos(angle)*r;
+        let y = centerY + Math.sin(angle)*r;
+        if(index===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.closePath();
+    let grad = ctx.createLinearGradient(0,0,width,height);
+    grad.addColorStop(0,"rgba(145,184,232,.35)");
+    grad.addColorStop(1,"rgba(219,166,200,.35)");
+    ctx.fillStyle = grad; ctx.fill();
+    let strokeGrad = ctx.createLinearGradient(0,0,width,height);
+    strokeGrad.addColorStop(0,"#91b8e8");
+    strokeGrad.addColorStop(1,"#c96a9f");
+    ctx.strokeStyle = strokeGrad; ctx.lineWidth = 2; ctx.stroke();
+    values.forEach((value,index)=>{
+        let angle = index*angleStep - Math.PI/2;
+        let r = radius*value/100;
+        let x = centerX + Math.cos(angle)*r;
+        let y = centerY + Math.sin(angle)*r;
+        ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2);
+        ctx.fillStyle = "#ffffff"; ctx.fill();
+        ctx.strokeStyle = "#91b8e8"; ctx.lineWidth = 1.5; ctx.stroke();
+    });
+    ctx.font = "12px sans-serif";
+    ctx.fillStyle = "#53607d";
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    labels.forEach((label,index)=>{
+        let angle = index*angleStep - Math.PI/2;
+        let x = centerX + Math.cos(angle)*(radius+22);
+        let y = centerY + Math.sin(angle)*(radius+22);
+        ctx.fillText(label, x, y);
+    });
+}
+</script>
+<script>
+function createShareCard(){
+    let canvas = document.getElementById("share-canvas");
+    let ctx = canvas.getContext("2d");
+    let main   = document.getElementById("result-main-title")?.innerText.trim() || "守护者";
+    let number = document.querySelector(".result-number")?.innerText.trim() || "NO.01";
+    let sub    = document.getElementById("result-sub-title")?.innerText.trim() || "";
+    let owner  = (character && character.name) ? character.name : "TA";
+    let tags   = Array.from(document.querySelectorAll(".tag")).map(e => e.innerText.trim());
+    canvas.width = 1080; canvas.height = 1920;
+
+    let gradient = ctx.createLinearGradient(0,0,1080,1920);
+    gradient.addColorStop(0,   "#dcecff");
+    gradient.addColorStop(0.5, "#f4d8e8");
+    gradient.addColorStop(1,   "#9eadd8");
+    ctx.fillStyle = gradient; ctx.fillRect(0,0,1080,1920);
+
+    for(let i=0; i<120; i++){
+        let x = Math.random()*1080, y = Math.random()*1920;
+        ctx.beginPath(); ctx.arc(x,y,Math.random()*2+1,0,Math.PI*2);
+        ctx.fillStyle = "rgba(255,255,255,.6)"; ctx.fill();
+    }
+
+    ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillStyle = "#465271"; ctx.font = "30px serif";
+    ctx.fillText("OC LOVE PROFILE", 540, 220);
+    ctx.font = "24px sans-serif"; ctx.fillStyle = "#687698";
+    ctx.fillText(number, 540, 300);
+    ctx.font = "28px sans-serif"; ctx.fillStyle = "#8494b8";
+    ctx.fillText(owner + " · 恋爱档案", 540, 390);
+
+    let titleGrad = ctx.createLinearGradient(200,0,880,0);
+    titleGrad.addColorStop(0, "#4a6cd4");
+    titleGrad.addColorStop(0.5, "#8b6ac9");
+    titleGrad.addColorStop(1, "#c96a9f");
+    ctx.font = "bold 110px serif";
+    ctx.fillStyle = titleGrad;
+    ctx.fillText(main, 540, 540);
+
+    let lineGrad = ctx.createLinearGradient(200,0,880,0);
+    lineGrad.addColorStop(0, "rgba(145,184,232,0)");
+    lineGrad.addColorStop(0.5, "rgba(180,140,200,.8)");
+    lineGrad.addColorStop(1, "rgba(219,166,200,0)");
+    ctx.strokeStyle = lineGrad; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(180, 640); ctx.lineTo(900, 640); ctx.stroke();
+
+    if(sub){
+        ctx.font = "30px sans-serif"; ctx.fillStyle = "#5b688a";
+        ctx.fillText("副倾向：" + sub, 540, 730);
+    }
+    ctx.font = "34px sans-serif"; ctx.fillStyle = "#4d5875";
+    ctx.fillText("TA会爱上怎样的人？", 540, 850);
+    ctx.font = "30px sans-serif"; ctx.fillStyle = "#3f4a68";
+    tags.forEach((tag,index)=>{ ctx.fillText("✦ " + tag, 540, 950 + index*58); });
+
+    let dataRows = document.querySelectorAll(".data-box .dim-row");
+    if(dataRows.length){
+        let startY = 950 + tags.length * 58 + 60;
+        ctx.font = "26px sans-serif";
+        dataRows.forEach((row, index)=>{
+            let label = row.querySelector(".dim-head span:first-child")?.innerText || "";
+            let value = row.querySelector(".dim-val")?.innerText || "";
+            let col = index % 2;
+            let r   = Math.floor(index / 2);
+            let x   = col === 0 ? 300 : 780;
+            let y   = startY + r * 56;
+            ctx.fillStyle = "#4d5875";
+            ctx.fillText(label + " " + value, x, y);
+        });
+    }
+    ctx.font = "28px sans-serif"; ctx.fillStyle = "rgba(50,60,90,.55)";
+    ctx.fillText("一粒沙尘制作", 540, 1780);
+
+    try{
+        let link = document.createElement("a");
+        link.download = "OC恋爱档案.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+    }catch(err){
+        alert("生成图片失败，请重试或更换浏览器。");
+        console.error(err);
+    }
+}
+</script>
+<script>
+let character = { name:"", gender:"" };
+let loveGender = "";
+let currentPage = 0;
+let answers = [];
+const questionsPerPage = 3;
+
+function showPage(id){
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    window.scrollTo({ top:0, behavior:"instant" });
+}
+function openProfile(){ showPage("profile-page"); }
+
+function selectCharacterGender(btn, gender){
+    btn.parentElement.querySelectorAll(".gender-btn").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    character.gender = gender;
+}
+function goLoveGender(){
+    let name = document.getElementById("character-name").value.trim();
+    if(!name){ alert("请输入角色姓名"); return; }
+    character.name = name;
+    showPage("love-gender-page");
+}
+function selectLoveGender(btn, gender){
+    document.querySelectorAll("#love-gender-page .gender-btn").forEach(b => b.classList.remove("selected"));
+    btn.classList.add("selected");
+    loveGender = gender;
+}
+function startExplain(){
+    if(!loveGender){ alert("请选择恋人性别倾向"); return; }
+    showPage("intro-page");
+}
+function startTest(){ currentPage = 0; answers = []; renderQuestionPage(); showPage("test-page"); }
+
+function renderQuestionPage(){
+    let container = document.getElementById("question-container");
+    container.innerHTML = "";
+    let start = currentPage * questionsPerPage;
+    let end   = Math.min(start + questionsPerPage, questions.length);
+    let list  = questions.slice(start, end);
+    document.getElementById("question-progress").innerText = `${start+1}-${end} / ${questions.length}`;
+
+    let moonData = [
+        { emoji:"🌕", score:5, label:"很符合" },
+        { emoji:"🌖", score:4, label:"比较符合" },
+        { emoji:"🌗", score:3, label:"一般" },
+        { emoji:"🌘", score:2, label:"不太符合" },
+        { emoji:"🌑", score:1, label:"不符合" }
+    ];
+
+    list.forEach((q, index)=>{
+        let realIndex = start + index;
+        let optionsHTML = moonData.map(m => `
+            <div class="moon-item" onclick="chooseAnswer(${realIndex},${m.score},this)">
+                <div class="moon">${m.emoji}</div>
+                <div class="moon-label">${m.label}</div>
+            </div>
+        `).join("");
+        container.innerHTML += `
+        <div class="question-card">
+            <div class="question-title">${realIndex+1}. ${q.text}</div>
+            <div class="moon-options">${optionsHTML}</div>
+        </div>`;
+    });
+
+    list.forEach((q, index)=>{
+        let realIndex = start + index;
+        if(answers[realIndex] !== undefined){
+            let card = container.querySelectorAll(".question-card")[index];
+            let items = card.querySelectorAll(".moon-item");
+            let moonIndex = 5 - answers[realIndex];
+            if(items[moonIndex]) items[moonIndex].classList.add("selected");
+        }
+    });
+}
+
+function chooseAnswer(index, score, element){
+    element.parentElement.querySelectorAll(".moon-item").forEach(m => m.classList.remove("selected"));
+    element.classList.add("selected");
+    answers[index] = score;
+}
+
+function goBackTest(){
+    if(currentPage > 0){
+        currentPage--;
+        renderQuestionPage();
+        window.scrollTo({ top:0, behavior:"instant" });
+    }else{
+        showPage("intro-page");
+    }
+}
+
+function nextQuestion(){
+    let start = currentPage * questionsPerPage;
+    let end   = Math.min(start + questionsPerPage, questions.length);
+    for(let i=start; i<end; i++){
+        if(answers[i] === undefined){ alert("请完成当前页所有选择"); return; }
+    }
+    let totalPages = Math.ceil(questions.length / questionsPerPage);
+    if(currentPage < totalPages - 1){
+        currentPage++;
+        renderQuestionPage();
+        window.scrollTo({ top:0, behavior:"instant" });
+    }else{
+        finishTest();
+    }
+}
+
+function finishTest(){
+    showPage("loading-page");
+    let texts = ["读取依恋倾向","分析理想关系","寻找灵魂契合","生成恋爱档案"];
+    let index = 0;
+    let loadingEl = document.getElementById("loading-text");
+    loadingEl.innerText = texts[0];
+    let timer = setInterval(()=>{
+        index++;
+        if(index >= texts.length){
+            clearInterval(timer);
+            setTimeout(()=>generateResult(), 800);
+            return;
+        }
+        loadingEl.innerText = texts[index];
+    }, 700);
+}
+
+function generateResult(){
+    let data = calculateResult(answers);
+    let result = getResultType(data);
+    renderResult(result, data);
+    showPage("result-page");
+}
+</script>
+
+</body>
+</html>
